@@ -16,28 +16,29 @@ import { PetsService } from './pets.service';
 export class PetsResolver {
   constructor(private petService: PetsService) {}
 
-  @Query(() => [Pet])
-  pets(): Promise<Pet[]> {
-    return this.petService.findAll();
-  }
-
-  @Mutation(() => Pet)
-  createPet(
-    @Args('createPetInput') createPetInput: CreatePetInput,
-  ): Promise<Pet> {
-    return this.petService.createPet(createPetInput);
-  }
-
-  @Query(() => Pet)
-  getPet(@Args('id', { type: () => Int }) id: number): Promise<Pet> {
+  // QUERIES
+  @Query(() => Pet, { name: 'pet' })
+  findOne(@Args('id', { type: () => Int }) id: number): Promise<Pet> {
     return this.petService.findOne(id);
   }
 
-  @Mutation(() => Int)
-  deletePet(@Args('id') id: string): Promise<number> {
-    return this.petService.deletePet(Number(id));
+  @Query(() => [Pet], { name: 'pets' })
+  findAll(): Promise<Pet[]> {
+    return this.petService.findAll();
   }
 
+  // MUTATIONS
+  @Mutation(() => Pet, { name: 'createPet' })
+  create(@Args('createPetInput') createPetInput: CreatePetInput): Promise<Pet> {
+    return this.petService.create(createPetInput);
+  }
+
+  @Mutation(() => Pet, { name: 'deletePet' })
+  remove(@Args('id', { type: () => Int }) id: number): Promise<Pet> {
+    return this.petService.remove(id);
+  }
+
+  // RESOLVE SUB-FIELDS
   @ResolveField(() => Owner)
   owner(@Parent() pet: Pet): Promise<Owner> {
     return this.petService.getOwner(pet.ownerId);

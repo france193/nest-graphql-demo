@@ -21,7 +21,11 @@ export class Pet {
   @Field(() => Int)
   ownerId: number;
 
-  @ManyToOne(() => Owner, (owner) => owner.pets)
+  // In this case, when i'll delete an owner, all the related pets will be deleted
+  @ManyToOne(() => Owner, (owner) => owner.pets, {
+    cascade: ['remove'],
+    onDelete: 'CASCADE',
+  })
   @Field(() => Owner)
   owner: Owner;
 }

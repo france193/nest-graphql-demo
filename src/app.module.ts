@@ -1,25 +1,43 @@
 import { Module } from '@nestjs/common';
 import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { GraphQLModule } from '@nestjs/graphql';
-import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PetsModule } from './pets/pets.module';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { OwnersModule } from './owners/owners.module';
+import * as path from 'path';
+import { ConfigurationModule } from './config/configuration.module';
+import { DatabaseModule } from './db/database.module';
 
 @Module({
   imports: [
+    ConfigurationModule,
+    DatabaseModule,
     GraphQLModule.forRoot<ApolloDriverConfig>({
       driver: ApolloDriver,
-      autoSchemaFile: join(process.cwd(), 'src/schema.gql'),
+      autoSchemaFile: path.join(process.cwd(), 'src/schema.gql'),
     }),
-    TypeOrmModule.forRoot({
-      type: 'sqlite',
-      database: 'db.sqlite',
-      synchronize: true,
-      entities: ['dist/**/*.entity{.ts,.js}'],
-    }),
+    // TypeOrmModule.forRoot({
+    //   type: 'sqlite',
+    //   database: 'db.sqlite',
+    //   synchronize: true,
+    //   entities: ['dist/**/*.entity{.ts,.js}'],
+    // }),
+    // TypeOrmModule.forRootAsync({
+    //   useFactory: () => {
+    //     const options: TypeOrmModuleOptions = {
+    //       type: 'postgres',
+    //       host: 'localhost',
+    //       port: 5432,
+    //       username: 'admin',
+    //       password: 'password',
+    //       database: 'test_db',
+    //       entities: [Pet, Owner],
+    //       synchronize: true,
+    //     };
+    //     return options;
+    //   },
+    // }),
     PetsModule,
     OwnersModule,
   ],
