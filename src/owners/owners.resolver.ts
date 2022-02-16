@@ -1,35 +1,74 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import {
+  Resolver,
+  Query,
+  Mutation,
+  Args,
+  Int,
+  Parent,
+  ResolveField,
+} from '@nestjs/graphql';
 import { OwnersService } from './owners.service';
 import { Owner } from './entities/owner.entity';
 import { CreateOwnerInput } from './dto/create-owner.input';
 import { UpdateOwnerInput } from './dto/update-owner.input';
+import { PetsService } from 'src/pets/pets.service';
+import { Pet } from 'src/pets/entities/pet.entity';
 
 @Resolver(() => Owner)
 export class OwnersResolver {
-  constructor(private readonly ownersService: OwnersService) {}
+  private iAmDeleting = false;
+  private petsDeleted = [];
 
-  @Mutation(() => Owner)
-  createOwner(@Args('createOwnerInput') createOwnerInput: CreateOwnerInput) {
-    return this.ownersService.create(createOwnerInput);
-  }
+  constructor(
+    private readonly ownersService: OwnersService,
+    private readonly petsService: PetsService,
+  ) {}
 
-  @Query(() => [Owner], { name: 'owners' })
-  findAll() {
-    return this.ownersService.findAll();
-  }
-
+  // QUERIES
   @Query(() => Owner, { name: 'owner' })
-  findOne(@Args('id', { type: () => Int }) id: number) {
+  findOne(@Args('id', { type: () => Int }) id: number): Promise<Owner> {
     return this.ownersService.findOne(id);
   }
 
-  @Mutation(() => Owner)
-  updateOwner(@Args('updateOwnerInput') updateOwnerInput: UpdateOwnerInput) {
+  @Query(() => [Owner], { name: 'owners' })
+  findAll(): Promise<Owner[]> {
+    return this.ownersService.findAll();
+  }
+
+  // MUTATIONS
+  @Mutation(() => Owner, { name: 'createOwner' })
+  create(
+    @Args('createOwnerInput') createOwnerInput: CreateOwnerInput,
+  ): Promise<Owner> {
+    return this.ownersService.create(createOwnerInput);
+  }
+
+  @Mutation(() => Owner, { name: 'updateOwner' })
+  update(
+    @Args('updateOwnerInput') updateOwnerInput: UpdateOwnerInput,
+  ): Promise<Owner> {
     return this.ownersService.update(updateOwnerInput.id, updateOwnerInput);
   }
 
-  @Mutation(() => Owner)
-  removeOwner(@Args('id', { type: () => Int }) id: number) {
+  @Mutation(() => Owner, { name: 'deleteOwner' })
+  async remove(@Args('id', { type: () => Int }) id: number): Promise<Owner> {
+    this.petsDeleted = await this.petsService.findPetByOwner(id);
+    this.iAmDeleting = true;
+
+    // return all deleted data
     return this.ownersService.remove(id);
+  }
+
+  //RESOLVE SUB-FIELDS
+  @ResolveField(() => [Pet])
+  pets(@Parent() owner: Owner): Promise<Pet[]> | Pet[] {
+    if (this.iAmDeleting) {
+      const pets = this.petsDeleted;
+      this.iAmDeleting = false;
+      this.petsDeleted = [];
+      return pets;
+    } else {
+      return this.petsService.findPetByOwner(owner.id);
+    }
   }
 }

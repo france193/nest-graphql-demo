@@ -1,36 +1,57 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Pet } from 'src/pets/entities/pet.entity';
 import { Repository } from 'typeorm';
 import { CreateOwnerInput } from './dto/create-owner.input';
-import { UpdateOwnerInput } from './dto/update-owner.input';
 import { Owner } from './entities/owner.entity';
 
 @Injectable()
 export class OwnersService {
   constructor(
-    @InjectRepository(Owner) private ownersRepository: Repository<Owner>,
+    @InjectRepository(Owner) private ownersRepository: Repository<Owner>
   ) {}
 
-  create(createOwnerInput: CreateOwnerInput) {
-    const owner = this.ownersRepository.create(createOwnerInput);
+  // CREATE
+  async create(createOwnerInput: CreateOwnerInput): Promise<Owner> {
+    const newOwner = this.ownersRepository.create(createOwnerInput);
+    return this.ownersRepository.save(newOwner);
+  }
+
+  // READ
+  async findAll(): Promise<Owner[]> {
+    return this.ownersRepository.find();
+  }
+
+  async findOne(id: number): Promise<Owner> {
+    return this.ownersRepository.findOneOrFail(id);
+  }
+
+  // UPDATE
+  async update(id: number, attrs: Partial<Owner>): Promise<Owner> {
+    const owner = await this.findOne(id);
+
+    if (!owner) {
+      throw new NotFoundException('owner not found');
+    }
+
+    Object.assign(owner, attrs);
 
     return this.ownersRepository.save(owner);
   }
 
-  findAll() {
-    return this.ownersRepository.find();
-  }
+  // DELETE
+  async remove(id: number): Promise<Owner> {
+    const owner = await this.findOne(id);
+    const toReturn = { ...owner };
 
-  findOne(id: number) {
-    return this.ownersRepository.findOneOrFail(id);
-  }
+    if (!owner) {
+      throw new NotFoundException('owner not found');
+    }
 
-  async update(id: number, { name }: UpdateOwnerInput) {
-    await this.ownersRepository.update({ id }, { name });
-    return this.ownersRepository.findOne(id);
-  }
+    // delete owner
+    await this.ownersRepository.remove(owner);
 
-  remove(id: number) {
-    return `This action removes a #${id} owner`;
+    // return deleted
+    return toReturn;
   }
 }
