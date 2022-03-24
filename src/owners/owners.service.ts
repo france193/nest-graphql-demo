@@ -1,6 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Pet } from 'src/pets/entities/pet.entity';
 import { Repository } from 'typeorm';
 import { CreateOwnerInput } from './dto/create-owner.input';
 import { Owner } from './entities/owner.entity';
@@ -8,7 +7,7 @@ import { Owner } from './entities/owner.entity';
 @Injectable()
 export class OwnersService {
   constructor(
-    @InjectRepository(Owner) private ownersRepository: Repository<Owner>
+    @InjectRepository(Owner) private ownersRepository: Repository<Owner>,
   ) {}
 
   // CREATE

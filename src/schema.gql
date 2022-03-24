@@ -2,12 +2,22 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type Pet {
-  id: Int!
+input CreateOwnerInput {
   name: String!
-  type: String
+}
+
+input CreatePetInput {
+  name: String!
   ownerId: Int!
-  owner: Owner!
+  type: String
+}
+
+type Mutation {
+  createOwner(createOwnerInput: CreateOwnerInput!): Owner!
+  createPet(createPetInput: CreatePetInput!): Pet!
+  deleteOwner(id: Int!): Owner!
+  deletePet(id: Int!): Pet!
+  updateOwner(updateOwnerInput: UpdateOwnerInput!): Owner!
 }
 
 type Owner {
@@ -16,32 +26,22 @@ type Owner {
   pets: [Pet!]
 }
 
+type Pet {
+  id: Int!
+  name: String!
+  owner: Owner!
+  ownerId: Int!
+  type: String
+}
+
 type Query {
-  pet(id: Int!): Pet!
-  pets: [Pet!]!
   owner(id: Int!): Owner!
   owners: [Owner!]!
-}
-
-type Mutation {
-  createPet(createPetInput: CreatePetInput!): Pet!
-  deletePet(id: Int!): Pet!
-  createOwner(createOwnerInput: CreateOwnerInput!): Owner!
-  updateOwner(updateOwnerInput: UpdateOwnerInput!): Owner!
-  deleteOwner(id: Int!): Owner!
-}
-
-input CreatePetInput {
-  name: String!
-  type: String
-  ownerId: Int!
-}
-
-input CreateOwnerInput {
-  name: String!
+  pet(id: Int!): Pet!
+  pets: [Pet!]!
 }
 
 input UpdateOwnerInput {
-  name: String!
   id: Int!
+  name: String!
 }

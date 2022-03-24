@@ -13,9 +13,20 @@ import { DatabaseModule } from './db/database.module';
   imports: [
     ConfigurationModule,
     DatabaseModule,
+    // GraphQLModule.forRoot<ApolloDriverConfig>({
+    //   driver: ApolloDriver,
+    //   autoSchemaFile: path.join(process.cwd(), 'src/schema.gql'),
+    // }),
     GraphQLModule.forRoot<ApolloDriverConfig>({
-      driver: ApolloDriver,
       autoSchemaFile: path.join(process.cwd(), 'src/schema.gql'),
+      sortSchema: true,
+      driver: ApolloDriver,
+      debug: false,
+      playground: true,
+      cors: {
+        origin: 'http://localhost:3000',
+        credentials: false,
+      },
     }),
     // TypeOrmModule.forRoot({
     //   type: 'sqlite',
